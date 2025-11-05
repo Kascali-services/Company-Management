@@ -1,5 +1,6 @@
 from pydantic import BaseModel, field_validator
 from typing import Optional
+from app.core.errors import ErrorMessage
 
 class PersonCreate(BaseModel):
     vorname: str
@@ -24,7 +25,7 @@ class PersonCreate(BaseModel):
             ValueError: If the function is not 'Mitarbeiter' or 'Azubi'
         """
         if v not in ['Mitarbeiter', 'Azubi']:
-            raise ValueError('Function must be either Mitarbeiter (employee) or Azubi (trainee)')
+            raise ValueError(ErrorMessage.INVALID_FUNKTION)
         return v
 
     @field_validator('rolle')
@@ -42,7 +43,7 @@ class PersonCreate(BaseModel):
             ValueError: If the role is not 'Empfehler' or 'Ansprechpartner'
         """
         if v not in ['Empfehler', 'Ansprechpartner']:
-            raise ValueError('Role must be either Empfehler (referrer) or Ansprechpartner (contact person)')
+            raise ValueError(ErrorMessage.INVALID_ROLLE)
         return v
 
 

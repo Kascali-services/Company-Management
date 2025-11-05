@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
+from app.core.errors import ErrorMessage
 from app.models.person import Person
 from app.models.unternehmen import Unternehmen
 from app.schemas.person import PersonCreate, PersonResponse
@@ -27,7 +28,7 @@ async def create_person(unternehmen_id: int, person: PersonCreate, db: Session =
     """
     unternehmen = db.query(Unternehmen).filter(Unternehmen.id == unternehmen_id).first()
     if not unternehmen:
-        raise HTTPException(status_code=404, detail="Company not found")
+        raise HTTPException(status_code=404, detail=ErrorMessage.COMPANY_NOT_FOUND)
 
     # Check if a contact person already exists for this company
     if person.rolle == "Ansprechpartner":
@@ -36,7 +37,7 @@ async def create_person(unternehmen_id: int, person: PersonCreate, db: Session =
             Person.rolle == "Ansprechpartner"
         ).first()
         if existing_ap:
-            raise HTTPException(status_code=400, detail="Company already has a contact person")
+            raise HTTPException(status_code=400, detail=ErrorMessage.CONTACT_PERSON_EXISTS)
 
     db_person = Person(**person.dict(), firma_id=unternehmen_id)
     db.add(db_person)
@@ -70,7 +71,7 @@ async def update_person(person_id: int, person: PersonCreate, db: Session = Depe
     """
     db_person = db.query(Person).filter(Person.id == person_id).first()
     if not db_person:
-        raise HTTPException(status_code=404, detail="Person not found")
+        raise HTTPException(status_code=404, detail=ErrorMessage.PERSON_NOT_FOUND)
 
     # If changing role to Ansprechpartner, check if one already exists
     if person.rolle == "Ansprechpartner" and db_person.rolle != "Ansprechpartner":
@@ -80,7 +81,7 @@ async def update_person(person_id: int, person: PersonCreate, db: Session = Depe
             Person.id != person_id
         ).first()
         if existing_ap:
-            raise HTTPException(status_code=400, detail="Company already has a contact person")
+            raise HTTPException(status_code=400, detail=ErrorMessage.CONTACT_PERSON_EXISTS)
 
     for key, value in person.dict().items():
         setattr(db_person, key, value)
@@ -119,7 +120,7 @@ async def delete_person(person_id: int, db: Session = Depends(get_db)):
     """
     db_person = db.query(Person).filter(Person.id == person_id).first()
     if not db_person:
-        raise HTTPException(status_code=404, detail="Person not found")
+        raise HTTPException(status_code=404, detail=ErrorMessage.PERSON_NOT_FOUND)
 
     # Remove contact person reference if necessary
     if db_person.rolle == "Ansprechpartner":
@@ -130,4 +131,4 @@ async def delete_person(person_id: int, db: Session = Depends(get_db)):
 
     db.delete(db_person)
     db.commit()
-    return {"message": "Person deleted successfully"}
+    return {"message": ErrorMessage.PERSON_DELETED}

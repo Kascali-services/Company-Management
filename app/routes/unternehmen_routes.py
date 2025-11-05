@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
 from app.core.database import get_db
+from app.core.errors import ErrorMessage
 from app.models.person import Person
 from app.models.unternehmen import Unternehmen
 from app.schemas.unternehmen import UnternehmenCreate, UnternehmenWithPersons, UnternehmenResponse
@@ -118,7 +119,7 @@ async def create_unternehmen(unternehmen: UnternehmenCreate, db: Session = Depen
     if unternehmen.ansprechpartner_id:
         person = db.query(Person).filter(Person.id == unternehmen.ansprechpartner_id).first()
         if not person or person.rolle != "Ansprechpartner":
-            raise HTTPException(status_code=400, detail="Invalid contact person: must have Ansprechpartner role")
+            raise HTTPException(status_code=400, detail=ErrorMessage.INVALID_CONTACT_PERSON)
 
     db_unternehmen = Unternehmen(**unternehmen.dict())
     db.add(db_unternehmen)
