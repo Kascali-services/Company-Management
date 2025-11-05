@@ -13,10 +13,22 @@ router = APIRouter(prefix="/api/export", tags=["Export"])
 
 @router.get("/csv")
 async def export_csv(db: Session = Depends(get_db)):
+    """
+    Export all companies to a CSV file.
+
+    The CSV includes company information, contact person details,
+    and the count of referrers for each company.
+
+    Args:
+        db: Database session dependency
+
+    Returns:
+        StreamingResponse: CSV file download with filename "unternehmen.csv"
+    """
     output = io.StringIO()
     writer = csv.writer(output)
 
-    # Kopfzeile
+    # CSV header row
     writer.writerow([
         'Unternehmen', 'Bundesland', 'Stadt', 'PLZ', 'Straße', 'Hausnummer',
         'Ansprechpartner Vorname', 'Ansprechpartner Nachname', 'Ansprechpartner Email',
@@ -49,6 +61,18 @@ async def export_csv(db: Session = Depends(get_db)):
 
 @router.get("/excel")
 async def export_excel(db: Session = Depends(get_db)):
+    """
+    Export all companies to an Excel file.
+
+    The Excel file includes company information, contact person details,
+    and the count of referrers for each company.
+
+    Args:
+        db: Database session dependency
+
+    Returns:
+        StreamingResponse: Excel file download with filename "unternehmen.xlsx"
+    """
     wb = Workbook()
     ws = wb.active
     ws.title = "Unternehmen"
