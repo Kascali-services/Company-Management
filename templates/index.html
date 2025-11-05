@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unternehmen Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-building text-blue-600 text-2xl"></i>
+                    <h1 class="text-2xl font-bold text-slate-800">Unternehmen Management</h1>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="exportData('csv')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center space-x-2">
+                        <i class="fas fa-file-csv"></i>
+                        <span>CSV Export</span>
+                    </button>
+                    <button onclick="exportData('excel')" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center space-x-2">
+                        <i class="fas fa-file-excel"></i>
+                        <span>Excel Export</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Search and Add Section -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
+                <div class="flex-1 w-full md:w-auto">
+                    <div class="relative">
+                        <input
+                            type="text"
+                            id="searchInput"
+                            placeholder="Suche nach Name, Stadt, PLZ oder Bundesland..."
+                            class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            oninput="searchUnternehmen()"
+                        >
+                        <i class="fas fa-search absolute left-3 top-4 text-slate-400"></i>
+                    </div>
+                </div>
+                <button
+                    onclick="openCreateModal()"
+                    class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center space-x-2 shadow-md hover:shadow-lg"
+                >
+                    <i class="fas fa-plus"></i>
+                    <span>Neues Unternehmen</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th onclick="sortTable('name')" class="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition">
+                                <div class="flex items-center space-x-1">
+                                    <span>Name</span>
+                                    <i class="fas fa-sort text-slate-400"></i>
+                                </div>
+                            </th>
+                            <th onclick="sortTable('bundesland')" class="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition">
+                                <div class="flex items-center space-x-1">
+                                    <span>Bundesland</span>
+                                    <i class="fas fa-sort text-slate-400"></i>
+                                </div>
+                            </th>
+                            <th onclick="sortTable('stadt')" class="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition">
+                                <div class="flex items-center space-x-1">
+                                    <span>Stadt</span>
+                                    <i class="fas fa-sort text-slate-400"></i>
+                                </div>
+                            </th>
+                            <th onclick="sortTable('plz')" class="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition">
+                                <div class="flex items-center space-x-1">
+                                    <span>PLZ</span>
+                                    <i class="fas fa-sort text-slate-400"></i>
+                                </div>
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Adresse</th>
+                            <th class="px-6 py-4 text-right text-xs font-medium text-slate-600 uppercase tracking-wider">Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="bg-white divide-y divide-slate-200">
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="bg-slate-50 px-6 py-4 flex items-center justify-between border-t border-slate-200">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <button onclick="previousPage()" class="px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50">
+                        Zurück
+                    </button>
+                    <button onclick="nextPage()" class="ml-3 px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50">
+                        Weiter
+                    </button>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-slate-700">
+                            Zeige <span id="showingFrom" class="font-medium">1</span> bis <span id="showingTo" class="font-medium">20</span> von <span id="totalRecords" class="font-medium">0</span> Einträgen
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" id="pagination">
+                            <!-- Pagination buttons will be generated here -->
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div id="unternehmenModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                <h2 id="modalTitle" class="text-2xl font-bold text-slate-800">Neues Unternehmen</h2>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <form id="unternehmenForm" class="p-6">
+                <input type="hidden" id="unternehmenId">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Name -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Name *</label>
+                        <input type="text" id="name" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Bundesland -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Bundesland *</label>
+                        <select id="bundesland" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Bitte wählen</option>
+                            {% for bl in bundeslaender %}
+                            <option value="{{ bl }}">{{ bl }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Stadt -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Stadt *</label>
+                        <input type="text" id="stadt" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- PLZ -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">PLZ *</label>
+                        <input type="text" id="plz" required pattern="\d{5}" maxlength="5" placeholder="12345" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="mt-1 text-xs text-slate-500">5 Ziffern erforderlich</p>
+                    </div>
+
+                    <!-- Straße -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Straße *</label>
+                        <input type="text" id="strasse" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Hausnummer -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Hausnummer *</label>
+                        <input type="text" id="hausnummer" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-slate-200">
+                    <button type="button" onclick="closeModal()" class="px-6 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        Speichern
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-slate-800">Unternehmen Details</h2>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div id="detailContent" class="p-6">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Person Modal -->
+    <div id="personModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                <h2 id="personModalTitle" class="text-2xl font-bold text-slate-800">Person hinzufügen</h2>
+                <button onclick="closePersonModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <form id="personForm" class="p-6">
+                <input type="hidden" id="personId">
+                <input type="hidden" id="personFirmaId">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Vorname -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Vorname *</label>
+                        <input type="text" id="personVorname" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Nachname -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Nachname *</label>
+                        <input type="text" id="personNachname" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                        <input type="email" id="personEmail" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Telefon -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Telefon</label>
+                        <input type="tel" id="personTelefon" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Funktion -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Funktion *</label>
+                        <select id="personFunktion" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Bitte wählen</option>
+                            <option value="Mitarbeiter">Mitarbeiter</option>
+                            <option value="Azubi">Azubi</option>
+                        </select>
+                    </div>
+
+                    <!-- Rolle -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Rolle *</label>
+                        <select id="personRolle" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Bitte wählen</option>
+                            <option value="Ansprechpartner">Ansprechpartner</option>
+                            <option value="Empfehler">Empfehler</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-slate-200">
+                    <button type="button" onclick="closePersonModal()" class="px-6 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        Speichern
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
