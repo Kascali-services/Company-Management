@@ -95,7 +95,7 @@ class TestPersonCreateSchema:
 
         error_dict = exc_info.value.errors()[0]
         assert error_dict["loc"] == ("rolle",)
-        assert "Rolle muss Empfehler oder Ansprechpartner sein" in error_dict["msg"]
+        assert "Role must be either Empfehler (referrer) or Ansprechpartner (contact person)" in error_dict["msg"]
 
     def test_rolle_case_sensitive(self, sample_person_data):
         """
@@ -112,7 +112,7 @@ class TestPersonCreateSchema:
         with pytest.raises(ValidationError) as exc_info:
             PersonCreate(**sample_person_data)
 
-        assert "Rolle muss Empfehler oder Ansprechpartner sein" in str(exc_info.value)
+        assert "Role must be either Empfehler (referrer) or Ansprechpartner (contact person)" in str(exc_info.value)
 
     def test_person_create_with_mitarbeiter_funktion(self):
         """
@@ -175,7 +175,7 @@ class TestPersonCreateSchema:
 
         error_dict = exc_info.value.errors()[0]
         assert error_dict["loc"] == ("funktion",)
-        assert "Funktion muss Mitarbeiter oder Azubi sein" in error_dict["msg"]
+        assert "Function must be either Mitarbeiter (employee) or Azubi (trainee)" in error_dict["msg"]
 
     def test_funktion_case_sensitive(self, sample_person_data):
         """
@@ -192,7 +192,7 @@ class TestPersonCreateSchema:
         with pytest.raises(ValidationError) as exc_info:
             PersonCreate(**sample_person_data)
 
-        assert "Funktion muss Mitarbeiter oder Azubi sein" in str(exc_info.value)
+        assert "Function must be either Mitarbeiter (employee) or Azubi (trainee)" in str(exc_info.value)
 
     def test_email_optional(self, sample_person_data):
         """
