@@ -139,7 +139,7 @@ class TestUnternehmenCreateSchema:
 
         error_dict = exc_info.value.errors()[0]
         assert error_dict["loc"] == ("bundesland",)
-        assert "Ungültiges Bundesland" in error_dict["msg"]
+        assert "Invalid federal state: must be one of the 16 German states" in error_dict["msg"]
 
     def test_all_valid_bundeslaender_accepted(self, sample_unternehmen_data):
         """
@@ -170,7 +170,7 @@ class TestUnternehmenCreateSchema:
         with pytest.raises(ValidationError) as exc_info:
             UnternehmenCreate(**sample_unternehmen_data)
 
-        assert "Ungültiges Bundesland" in str(exc_info.value)
+        assert "Invalid federal state: must be one of the 16 German states" in str(exc_info.value)
 
     def test_missing_required_field_raises_validation_error(self):
         """
