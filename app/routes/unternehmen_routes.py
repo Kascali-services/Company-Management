@@ -8,14 +8,8 @@ from app.models.person import Person
 from app.models.unternehmen import Unternehmen
 from app.schemas.unternehmen import UnternehmenCreate, UnternehmenWithPersons, UnternehmenResponse
 
-# Configure logger
+# Get logger for this module
 logger = logging.getLogger(__name__)
-if not logger.hasHandlers():  # éviter double logging
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-logger.setLevel(logging.INFO)
 
 router = APIRouter(prefix="/api/unternehmen", tags=["unternehmen"])
 
@@ -28,6 +22,27 @@ async def get_unternehmen(
     sort_order: str | None = "asc",
     db: Session = Depends(get_db)
 ):
+    """
+    Retrieve a paginated list of companies with optional search and sorting.
+
+    Args:
+        skip: Number of records to skip for pagination (default: 0)
+        limit: Maximum number of records to return (default: 20, max: 100)
+        search: Optional search string to filter companies by name, city, postal code, or state
+        sort_by: Field to sort by (default: "name"). Valid values: name, bundesland, stadt, plz
+        sort_order: Sort direction (default: "asc"). Valid values: asc, desc
+        db: Database session dependency
+
+    Returns:
+        dict: Paginated response containing:
+            - items: List of companies with their associated persons
+            - total: Total number of matching companies
+            - skip: Number of records skipped
+            - limit: Maximum number of records returned
+
+    Raises:
+        HTTPException: If database query fails
+    """
     try:
         logger.info("Start fetching companies (skip=%s, limit=%s, search=%s, sort_by=%s, sort_order=%s)",
                     skip, limit, search, sort_by, sort_order)
@@ -86,10 +101,24 @@ async def get_unternehmen(
 
 @router.post("/", response_model=UnternehmenResponse)
 async def create_unternehmen(unternehmen: UnternehmenCreate, db: Session = Depends(get_db)):
+    """
+    Create a new company.
+
+    Args:
+        unternehmen: Company data to create
+        db: Database session dependency
+
+    Returns:
+        UnternehmenResponse: The newly created company
+
+    Raises:
+        HTTPException: 400 if the specified contact person is invalid or doesn't have the
+                       Ansprechpartner role
+    """
     if unternehmen.ansprechpartner_id:
         person = db.query(Person).filter(Person.id == unternehmen.ansprechpartner_id).first()
         if not person or person.rolle != "Ansprechpartner":
-            raise HTTPException(status_code=400, detail="Ungültiger Ansprechpartner")
+            raise HTTPException(status_code=400, detail="Invalid contact person: must have Ansprechpartner role")
 
     db_unternehmen = Unternehmen(**unternehmen.dict())
     db.add(db_unternehmen)

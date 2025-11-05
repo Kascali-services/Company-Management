@@ -15,9 +15,21 @@ class UnternehmenCreate(BaseModel):
 
     @field_validator('bundesland')
     def validate_bundesland(cls, v):
+        """
+        Validate that the federal state (Bundesland) is one of the 16 German states.
+
+        Args:
+            v: The state value to validate
+
+        Returns:
+            str: The validated state value
+
+        Raises:
+            ValueError: If the state is not one of the 16 German federal states
+        """
         from app.utils.constants import BUNDESLAENDER
         if v not in BUNDESLAENDER:
-            raise ValueError('Ungültiges Bundesland')
+            raise ValueError('Invalid federal state: must be one of the 16 German states')
         return v
 
 
