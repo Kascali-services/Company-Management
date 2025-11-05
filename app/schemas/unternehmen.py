@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
 
 from app.schemas.person import PersonResponse
+from app.core.errors import ErrorMessage
 
 
 class UnternehmenCreate(BaseModel):
@@ -29,7 +30,7 @@ class UnternehmenCreate(BaseModel):
         """
         from app.utils.constants import BUNDESLAENDER
         if v not in BUNDESLAENDER:
-            raise ValueError('Invalid federal state: must be one of the 16 German states')
+            raise ValueError(ErrorMessage.INVALID_BUNDESLAND)
         return v
 
 
